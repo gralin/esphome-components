@@ -1,6 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
+from esphome.core import CORE
 from esphome.components import time
 from esphome.components.network import IPAddress
 from esphome.const import (
@@ -117,6 +118,12 @@ async def to_code(config):
         cg.add(var.set_led_blink_time(config[CONF_LED_BLINK_TIME].total_milliseconds))
 
     cg.add_library("SPI", None)
+
+    # ESPHome 2026.2+ disables ESP32 Arduino libraries by default (selective
+    # compilation). This component includes <WiFiClient.h>/<WiFiUdp.h> directly,
+    # so re-enable the Arduino WiFi library explicitly. No-op elsewhere.
+    if CORE.is_esp32 and CORE.using_arduino:
+        cg.add_library("WiFi", None)
 
     cg.add_library(
         "SmartRC-CC1101-Driver-Lib",
